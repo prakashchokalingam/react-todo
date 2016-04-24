@@ -1,0 +1,231 @@
+<html>
+<head>
+  <link rel="shortcut icon" href="https://facebook.github.io/react/favicon.ico">
+  <meta name="viewport" content="width=device-width">
+  <meta property="og:title" content="Rich Todo Application using React v0.14.7">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://prakashchokalingam.github.io/react-todo">
+  <meta property="og:image" content="https://facebook.github.io/react/img/logo_og.png">
+  <meta property="og:description" content="A JavaScript library for building user interfaces">
+  <!-- Compiled and minified CSS -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+<link rel="stylesheet" href="style.css">
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+<script type="text/javascript" src="react.js"></script>
+<script type="text/javascript" src="react-dom.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+
+ <!-- Compiled and minified JavaScript -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+  <h1 class="center-align">Todo List  <span id="reset" ></span></h1>
+  <div class="col s12 title"></div>
+  <div class="col s12 z-depth-5">
+   <div id="TodoList"></div>
+  </div>
+  <div id="clear-all">
+</div>
+
+</div>
+<!-- <div id="InputField"></div> -->
+<script type="text/babel">
+var undone=0;
+var done=0;
+var InputField = React.createClass({
+  render:function()
+  {
+    return (
+      <div className="main-input">
+       <div className="input-field col s6">
+         <i className="material-icons prefix">description</i>
+         <input id="icon_prefix" type="text" className="validate" className="materialize-textarea" onBlur={this.props.onBlur} onKeyPress={this.props.onKeyPress} />
+         <label>Enter your Todo &#8216;s</label>
+       </div>
+       </div>
+    );
+  }
+});
+// list
+var TodoList = React.createClass({
+    getInitialState:function()
+    {
+      if(window.localStorage.getItem('_todos')==null)
+      {
+        let temp = [{todo:"sample",id:1,done:false}];
+         window.localStorage.setItem('_todos',JSON.stringify(temp));
+      }
+      return {list:JSON.parse(window.localStorage.getItem('_todos'))};
+    },
+    componentDidMount:function()
+    {
+      $('.tooltipped').tooltip({delay: 50});
+    },
+    getTextKeyPress:function(event)
+    {
+        if(event.key=="Enter")
+        this.getText(event);
+    },
+    getText:function(event) {
+      let value=event.target.value;
+      if(!event.target.value=="")
+      {
+        event.target.value="";
+        let obj = {todo:value,id:this.state.list.length+1,done:false};
+         this.state.list.push(obj);
+         this.setState({
+           list:this.state.list
+         });
+      }
+
+    },
+    removeTodo:function(event)
+    {
+     let id=event.target.attributes.id.value;
+     this.state.list[id-1].done=true;
+     this.setState({
+       list:this.state.list
+     });
+    },
+    editTodo:function(event)
+    {
+      let id=event.target.attributes.id.value;
+       ReactDOM.render(<EditInput value={this.state.list[id-1].todo} id={id} onBlur={this.finalEdit} onKeyPress={this.editKeypress}/>,document.getElementById('edit_'+id));
+       $('#list_'+event.target.attributes.id.value).hide();
+
+    },
+    editKeypress:function(event){
+      if(event.key=="Enter")
+      this.finalEdit(event);
+    },
+    finalEdit:function(event)
+    {
+      if(event.target.value!="")
+      {
+        if(this.state.list[event.target.attributes.id.value-1].todo!=event.target.value)
+        {
+          this.state.list[event.target.attributes.id.value-1].todo=event.target.value;
+          this.setState({
+            list:this.state.list
+          });
+        }
+      }
+      $('#edit_'+event.target.attributes.id.value).html("");
+      $('#list_'+event.target.attributes.id.value).show();
+    },
+    permanentDelete:function(event)
+    {
+      let id=event.target.attributes.id.value;
+       this.state.list.splice(this.state.list[id-1],1);
+       this.setState({
+         list:this.state.list
+       });
+
+    },
+    undone:function(event){
+      let id=event.target.attributes.id.value;
+      this.state.list[id-1].done=false;
+      this.setState({
+        list:this.state.list
+      });
+    },
+    render:function()
+    {
+      $('.tooltipped').tooltip({delay: 50});
+      window.localStorage.setItem('_todos',JSON.stringify(this.state.list));
+      var unlist=this.state.list.map((t)=>{
+       if(t.done==true)
+       {
+         return (
+            <span className="DoneList hoverable" key={t.id}>
+              <span className="doneTodo">{t.todo}</span>&nbsp;
+              <span>
+             <i className="material-icons "   id={t.id} onClick={this.permanentDelete}>delete</i> &nbsp;
+             <i className="material-icons "  id={t.id} onClick={this.undone}>assignment_late</i>
+              </span>
+            </span>
+         );
+       }
+      });
+      var list=this.state.list.map((t)=>{
+        if(t.done==false)
+        {
+          return (
+            <div className="row" key={t.id}>
+            <div className="card-panel hoverable l2">
+             <span id={"list_"+t.id}>{t.todo}</span>
+              <span id={"edit_"+t.id}></span>
+              <span className="right">
+              <span className="material-icons " onClick={this.editTodo} id={t.id}>mode_edit</span>
+              <span className="material-icons " onClick={this.removeTodo} id={t.id}>done</span>
+             </span>
+             </div>
+             </div>
+          );
+        }
+      });
+      return (
+        <div>
+         <div>
+         <InputField onBlur={this.getText} onKeyPress={this.getTextKeyPress}/>
+         {list}
+         </div>
+         <div>
+         {unlist}
+         </div>
+         </div>
+      );
+    }
+});
+var EditInput = React.createClass({
+  render:function()
+  {
+    return <input type="text" defaultValue={this.props.value} id={this.props.id} onBlur={this.props.onBlur} onKeyPress={this.props.onKeyPress} autoFocus="true" required/>;
+  }
+});
+var ResetComponent = React.createClass({
+  componentDidMount:function()
+  {
+    $('.tooltipped').tooltip({delay: 50});
+  },
+  reset:function()
+  {
+     window.localStorage.clear();
+     window.location.reload();
+  },
+   render:function()
+   {
+     return (
+       <a className="btn-floating btn-large waves-effect waves-light red right tooltipped" data-position="right" data-delay="50" data-tooltip="Reset App" onClick={this.reset}><i className="material-icons">replay</i></a>
+
+     );
+   }
+});
+var ClearAll = React.createClass({
+  clearDones:function(){
+     let x=JSON.parse(window.localStorage.getItem('_todos'));
+     $.each(x,function(key,data){
+       if(data.done==true)
+       x.splice(x[key],1);
+     });
+     window.localStorage.setItem('_todos',JSON.stringify(x));
+     window.location.reload();
+  },
+    render:function(){
+      return (
+        <div>
+        <a className="waves-effect waves-light btn btn-block all-done" onClick={this.clearDones}>Clear all Done &#8216;s</a>
+       </div>
+      );
+    }
+});
+  ReactDOM.render(<TodoList/>,document.getElementById('TodoList'));
+  ReactDOM.render(<ResetComponent/>,document.getElementById('reset'));
+  ReactDOM.render(<ClearAll/>,document.getElementById('clear-all'));
+
+</script>
+</body>
+</html>

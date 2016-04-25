@@ -120,11 +120,13 @@ var TodoList = React.createClass({
     {
       let id=event.target.attributes.id.value;
       let newArray = [];
+      let count=0;
        $.each(this.state.list,function(key,data){
          if(data.id!=id)
          {
-           data.id=key+1;
+           data.id=count+1;
            newArray.push(data);
+           count++;
          }
        });
        this.setState({
@@ -215,11 +217,13 @@ var ClearAll = React.createClass({
   clearDones:function(){
      let x=JSON.parse(window.localStorage.getItem('_todos'));
      var newArray=[];
+     let count=0;
      $.each(x,function(key,data){
        if(data.done==false)
        {
-         data.id=key+1;
+         data.id=count+1;
          newArray.push(data);
+         count++;
        }
      });
      window.localStorage.setItem('_todos',JSON.stringify(newArray));

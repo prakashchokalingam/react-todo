@@ -120,6 +120,9 @@ var TodoList = React.createClass({
     {
       let id=event.target.attributes.id.value;
        this.state.list.splice(this.state.list[id-1],1);
+       $.each(this.state.list,function(key,data){
+           data.id=key+1;
+       });
        this.setState({
          list:this.state.list
        });
@@ -207,11 +210,15 @@ var ResetComponent = React.createClass({
 var ClearAll = React.createClass({
   clearDones:function(){
      let x=JSON.parse(window.localStorage.getItem('_todos'));
+     var newArray=[];
      $.each(x,function(key,data){
-       if(data.done==true)
-       x.splice(x[key],1);
+       if(data.done==false)
+       {
+         data.id=key+1;
+         newArray.push(data);
+       }
      });
-     window.localStorage.setItem('_todos',JSON.stringify(x));
+     window.localStorage.setItem('_todos',JSON.stringify(newArray));
      window.location.reload();
   },
     render:function(){

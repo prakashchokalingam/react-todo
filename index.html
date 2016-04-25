@@ -119,12 +119,16 @@ var TodoList = React.createClass({
     permanentDelete:function(event)
     {
       let id=event.target.attributes.id.value;
-       this.state.list.splice(this.state.list[id-1],1);
+      let newArray = [];
        $.each(this.state.list,function(key,data){
+         if(data.id!=id)
+         {
            data.id=key+1;
+           newArray.push(data);
+         }
        });
        this.setState({
-         list:this.state.list
+         list:newArray
        });
 
     },
